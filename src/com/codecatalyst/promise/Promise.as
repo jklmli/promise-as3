@@ -179,7 +179,7 @@ package com.codecatalyst.promise
 					promise.then(
 						// All promises must resolve() before the when() resolves
 						
-						function ( result:* ):void {
+						function ( ... result ):void {
 							results[ promises.indexOf( promise ) ] = result;
 							
 							if ( --size == 0 )
@@ -188,7 +188,7 @@ package com.codecatalyst.promise
 						
 						// Any promise reject(), rejects the when()
 						
-						function ( error:* ):void {
+						function ( ... error ):void {
 							errors[ promises.indexOf( promise ) ] = error;
 							
 							deferred.reject.apply(deferred, errors);
@@ -196,7 +196,7 @@ package com.codecatalyst.promise
 						
 						// Only most recent notify value forwarded
 						
-						function ( status:* ):void {
+						function ( ... status ):void {
 							statuses[ promises.indexOf( promise ) ] = status;
 							
 							deferred.notify.apply(deferred, statuses );
@@ -204,7 +204,7 @@ package com.codecatalyst.promise
 						
 						// Any promise cancel(), cancels the when()
 						
-						function ( reason:* ):void {
+						function ( ... reason ):void {
 							reasons[ promises.indexOf( promise ) ] = reason;
 							
 							deferred.cancel.apply(deferred, reasons );

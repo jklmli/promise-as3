@@ -774,13 +774,15 @@ package com.codecatalyst.promise.tests
 			initCounters();
 			
 			var p1Result = "promise 1 result",
-				p2Result = "promise 2 result",
+				p2Result1 = "promise 2 result 1",
+                p2Result2 = "promise 2 result 2",
 				promise1 = Promise.wait(30, p1Result).then( onResultHandler ),
-				promise2 = Promise.wait(45, p2Result).then( onResultHandler ),
+				promise2 = Promise.wait(45, p2Result1, p2Result2).then( onResultHandler ),
+                promise3 = Promise.wait(15).then( onResultHandler ),
 				
 				// Now create when() batch set...
 				
-				batch    = Promise.when( promise1, promise2 )
+				batch    = Promise.when( promise1, promise2, promise3 )
 					              .then( function( p1, p2) {
 								  		onResultHandler([p1,p2]);
 								  });
@@ -788,12 +790,14 @@ package com.codecatalyst.promise.tests
 				
 			Async.delayCall(this, function(){
 				
-				checkResults(batch, true,  batch.result,  3);
+				checkResults(batch, true,  batch.result,  4);
 				
 				// Batched results are stored in array... in order submitted to when(...)
 				
 				Assert.assertEquals("batch results[0] == p1Result", p1Result, batch.result[0] );
-				Assert.assertEquals("batch results[1] == p2Result", p2Result, batch.result[1] );
+				Assert.assertEquals("batch results[1][0] == p2Result1", p2Result1, batch.result[1][0] );
+                Assert.assertEquals("batch results[1][1] == p2Result2", p2Result2, batch.result[1][1] );
+                Assert.assertTrue("batch results[2] == []", batch.result[2] is Array && batch.result[2].length == 0);
 				
 				checkRejects(batch, false, null, 0);
 				checkUpdates(batch, false, null, 0);
@@ -914,7 +918,7 @@ package com.codecatalyst.promise.tests
 				// NOTE: functions in a when() resolve to `null` 
 				
 				Assert.assertEquals("batch results[0] == p1Result", p1Result, batch.result[0] );
-				Assert.assertEquals("batch results[1] == p2Result", null, batch.result[1] );
+				Assert.assertTrue("batch results[1] == p2Result", batch.result[1] is Array && batch.result[1][0] == null);
 				
 				checkRejects(batch, false, null, 0);
 				checkUpdates(batch, false, null, 0);
@@ -1081,7 +1085,7 @@ package com.codecatalyst.promise.tests
 		// Protected Methods
 		// *****************************************************************************
 		
-		protected function onResultHandler(val:*):void	{	resultHitCount++;	alwaysHitCount++; }
+		protected function onResultHandler(... args):void	{	resultHitCount++;	alwaysHitCount++; }
 		protected function onErrorHandler( val:*):void	{	errorHitCount++;	alwaysHitCount++; }
 		protected function onProgressHandler(val:*):void{	progressHitCount++;					  }
 		protected function onCancelHandler(val:*):void	{	cancelHitCount++;	alwaysHitCount++; }

@@ -286,53 +286,42 @@ package com.codecatalyst.promise
 			firingStart  = 0;
 			firingLength = list.length;
 			
-			try {
-				dispatchEvent( new Event( STATE_CHANGED ) );
+			dispatchEvent( new Event( STATE_CHANGED ) );
 				
-				try {
-					for ( ; list && firingIndex < firingLength; firingIndex++ ) {
-						
-						var func     : Function = list[ firingIndex ] as Function;
-						var returned : * 		= func.apply( context, args );
-						
-						if ( flags.stopOnFalse && (returned===false) ) {
-							stopped = true; // Mark as halted
-							break;
-						}
+			for ( ; list && firingIndex < firingLength; firingIndex++ ) {
+				
+				var func     : Function = list[ firingIndex ] as Function;
+				var returned : * 		= func.apply( context, args );
+				
+				if ( flags.stopOnFalse && (returned===false) ) {
+					stopped = true; // Mark as halted
+					break;
+				}
+			}
+                
+			firing = false;
+			
+			if ( list ) 
+			{
+				if ( !flags.once ) 
+				{
+					if ( stack && stack.length ) 
+					{
+						memory = stack.shift();
+						fire( memory[ 0 ], memory[ 1 ] );
 					}
-				} catch( e:Error )  {
-					// Catch only to log...
-					trace(e.message);
-					throw( e );
+					
+				} else if ( stopped )  {
+					
+					this.disable();
+					
+				} else {
+					
+					list = [];
 				}
 			}
 			
-			finally {
-				
-				firing = false;
-				
-				if ( list ) 
-				{
-					if ( !flags.once ) 
-					{
-						if ( stack && stack.length ) 
-						{
-							memory = stack.shift();
-							fire( memory[ 0 ], memory[ 1 ] );
-						}
-						
-					} else if ( stopped )  {
-						
-						this.disable();
-						
-					} else {
-						
-						list = [];
-					}
-				}
-				
-				dispatchEvent( new Event( STATE_CHANGED ) );
-			}
+			dispatchEvent( new Event( STATE_CHANGED ) );
 		}
 		
 		// ****************************************************************************
